@@ -283,104 +283,286 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--accent); ou
 <script>
 /* =====================================================================
    SONGLISTE – frei erweiterbar.
-   Format: ["Titel", "Interpret", "weitere akzeptierte Interpreten (optional, mit | getrennt)"]
+   Format: ["Titel", "Interpret", "weitere akzeptierte Interpreten (mit | getrennt, sonst "")", [Hörprobe]]
+   Der vierte Eintrag (Hörprobe aus dem Apple-Katalog) wurde automatisch erzeugt.
+   Neue Songs einfach ohne ihn anfügen, z. B. ["Atemlos","Helene Fischer",""] –
+   die App sucht sie dann selbst im Katalog.
    Pro Tag werden aus dieser Liste die nächsten Songs gezogen; je länger
    die Liste, desto später wiederholt sich etwas.
    ===================================================================== */
 const SONGS = [
-  ["Bohemian Rhapsody","Queen"],["Don't Stop Me Now","Queen"],["Another One Bites the Dust","Queen"],
-  ["Under Pressure","Queen & David Bowie","Queen|David Bowie"],
-  ["Billie Jean","Michael Jackson"],["Thriller","Michael Jackson"],["Like a Prayer","Madonna"],
-  ["Hey Jude","The Beatles"],["Let It Be","The Beatles"],["Imagine","John Lennon"],
-  ["Hotel California","Eagles"],["Stayin' Alive","Bee Gees"],["Dancing Queen","ABBA"],["Mamma Mia","ABBA"],
-  ["I Will Survive","Gloria Gaynor"],["Sweet Child O' Mine","Guns N' Roses"],["Smells Like Teen Spirit","Nirvana"],
-  ["Wonderwall","Oasis"],["Africa","Toto"],["Take On Me","a-ha"],["Every Breath You Take","The Police"],
-  ["Livin' on a Prayer","Bon Jovi"],["It's My Life","Bon Jovi"],["Girls Just Want to Have Fun","Cyndi Lauper"],
-  ["Wake Me Up Before You Go-Go","Wham!"],["Last Christmas","Wham!"],["Purple Rain","Prince"],
-  ["Born in the U.S.A.","Bruce Springsteen"],["Rolling in the Deep","Adele"],["Someone Like You","Adele"],["Hello","Adele"],
-  ["Shape of You","Ed Sheeran"],["Perfect","Ed Sheeran"],["Thinking Out Loud","Ed Sheeran"],["Bad Habits","Ed Sheeran"],
-  ["Bad Guy","Billie Eilish"],["Birds of a Feather","Billie Eilish"],["Blinding Lights","The Weeknd"],
-  ["Uptown Funk","Mark Ronson feat. Bruno Mars","Mark Ronson|Bruno Mars"],["Happy","Pharrell Williams"],
-  ["Get Lucky","Daft Punk feat. Pharrell Williams","Daft Punk|Pharrell Williams"],["Crazy in Love","Beyoncé"],
-  ["Halo","Beyoncé"],["Single Ladies (Put a Ring on It)","Beyoncé"],["Umbrella","Rihanna"],
-  ["Toxic","Britney Spears"],["...Baby One More Time","Britney Spears"],["Wannabe","Spice Girls"],
-  ["I Want It That Way","Backstreet Boys"],["Mr. Brightside","The Killers"],["Seven Nation Army","The White Stripes"],
-  ["Viva la Vida","Coldplay"],["Yellow","Coldplay"],["Fix You","Coldplay"],["Clocks","Coldplay"],
-  ["In the End","Linkin Park"],["Numb","Linkin Park"],["Bring Me to Life","Evanescence"],
-  ["Hips Don't Lie","Shakira"],["Waka Waka (This Time for Africa)","Shakira"],["Poker Face","Lady Gaga"],
-  ["Bad Romance","Lady Gaga"],["Shallow","Lady Gaga & Bradley Cooper","Lady Gaga|Bradley Cooper"],
-  ["Die With a Smile","Lady Gaga & Bruno Mars","Lady Gaga|Bruno Mars"],
-  ["(I Can't Get No) Satisfaction","The Rolling Stones"],["Paint It Black","The Rolling Stones"],
-  ["Johnny B. Goode","Chuck Berry"],["Jailhouse Rock","Elvis Presley"],["Can't Help Falling in Love","Elvis Presley"],
-  ["What a Wonderful World","Louis Armstrong"],["My Way","Frank Sinatra"],["Respect","Aretha Franklin"],
-  ["Stand by Me","Ben E. King"],["Superstition","Stevie Wonder"],["Sweet Dreams (Are Made of This)","Eurythmics"],
-  ["Highway to Hell","AC/DC"],["Back in Black","AC/DC"],["Smoke on the Water","Deep Purple"],
-  ["Stairway to Heaven","Led Zeppelin"],["Wish You Were Here","Pink Floyd"],["Another Brick in the Wall","Pink Floyd"],
-  ["Wind of Change","Scorpions"],["The Final Countdown","Europe"],["Eye of the Tiger","Survivor"],
-  ["Don't Stop Believin'","Journey"],["I Gotta Feeling","The Black Eyed Peas"],["Where Is the Love?","The Black Eyed Peas"],
-  ["Lose Yourself","Eminem"],["Without Me","Eminem"],["In da Club","50 Cent"],["Hey Ya!","OutKast"],
-  ["Crazy","Gnarls Barkley"],["Rehab","Amy Winehouse"],["Valerie","Mark Ronson feat. Amy Winehouse","Mark Ronson|Amy Winehouse"],
-  ["Chasing Cars","Snow Patrol"],["Somebody That I Used to Know","Gotye feat. Kimbra","Gotye|Kimbra"],
-  ["Pumped Up Kicks","Foster the People"],["Royals","Lorde"],["Shake It Off","Taylor Swift"],
-  ["Blank Space","Taylor Swift"],["Anti-Hero","Taylor Swift"],["Cruel Summer","Taylor Swift"],
-  ["Levitating","Dua Lipa"],["Don't Start Now","Dua Lipa"],["New Rules","Dua Lipa"],
-  ["As It Was","Harry Styles"],["Watermelon Sugar","Harry Styles"],["Flowers","Miley Cyrus"],["Wrecking Ball","Miley Cyrus"],
-  ["drivers license","Olivia Rodrigo"],["Stay","The Kid LAROI & Justin Bieber","The Kid LAROI|Justin Bieber"],
-  ["Sorry","Justin Bieber"],["Despacito","Luis Fonsi feat. Daddy Yankee","Luis Fonsi|Daddy Yankee"],
-  ["Counting Stars","OneRepublic"],["Radioactive","Imagine Dragons"],["Believer","Imagine Dragons"],["Thunder","Imagine Dragons"],
-  ["Wake Me Up","Avicii"],["Levels","Avicii"],["Titanium","David Guetta feat. Sia","David Guetta|Sia"],
-  ["Chandelier","Sia"],["Cheap Thrills","Sia"],["Lean On","Major Lazer & DJ Snake feat. MØ","Major Lazer|DJ Snake|MØ"],
-  ["Faded","Alan Walker"],["Lovely Day","Bill Withers"],["Ain't No Sunshine","Bill Withers"],
-  ["Sweet Caroline","Neil Diamond"],["Take Me Home, Country Roads","John Denver"],["Ring of Fire","Johnny Cash"],
-  ["Jolene","Dolly Parton"],["9 to 5","Dolly Parton"],["Heroes","David Bowie"],["Space Oddity","David Bowie"],
-  ["Rocket Man","Elton John"],["Your Song","Elton John"],["I'm Still Standing","Elton John"],
-  ["Tainted Love","Soft Cell"],["Don't You (Forget About Me)","Simple Minds"],["Relax","Frankie Goes to Hollywood"],
-  ["Karma Chameleon","Culture Club"],["Total Eclipse of the Heart","Bonnie Tyler"],["Zombie","The Cranberries"],
-  ["Linger","The Cranberries"],["Creep","Radiohead"],["Losing My Religion","R.E.M."],["Everybody Hurts","R.E.M."],
-  ["Basket Case","Green Day"],["Boulevard of Broken Dreams","Green Day"],["Californication","Red Hot Chili Peppers"],
-  ["Under the Bridge","Red Hot Chili Peppers"],["Song 2","Blur"],["Bitter Sweet Symphony","The Verve"],
-  ["Torn","Natalie Imbruglia"],["Ironic","Alanis Morissette"],["No Scrubs","TLC"],
-  ["Gangsta's Paradise","Coolio feat. L.V.","Coolio"],["Freed from Desire","Gala"],["Blue (Da Ba Dee)","Eiffel 65"],
-  ["Mr. Vain","Culture Beat"],["What Is Love","Haddaway"],["Rhythm Is a Dancer","Snap!"],
-  ["The Rhythm of the Night","Corona"],["Barbie Girl","Aqua"],["Coco Jamboo","Mr. President"],
-  ["Sunny","Boney M."],["Rasputin","Boney M."],["Daddy Cool","Boney M."],["Y.M.C.A.","Village People"],
-  ["September","Earth, Wind & Fire"],["Le Freak","Chic"],["Dancing in the Moonlight","Toploader"],
-  ["Sex on Fire","Kings of Leon"],["Use Somebody","Kings of Leon"],["Hey There Delilah","Plain White T's"],
-  ["Apologize","Timbaland feat. OneRepublic","Timbaland|OneRepublic"],["Firework","Katy Perry"],["Roar","Katy Perry"],
-  ["Call Me Maybe","Carly Rae Jepsen"],["Payphone","Maroon 5 feat. Wiz Khalifa","Maroon 5|Wiz Khalifa"],
-  ["Sugar","Maroon 5"],["Moves Like Jagger","Maroon 5 feat. Christina Aguilera","Maroon 5|Christina Aguilera"],
-  ["Grenade","Bruno Mars"],["Just the Way You Are","Bruno Mars"],["Locked Out of Heaven","Bruno Mars"],
-  ["APT.","ROSÉ & Bruno Mars","ROSÉ|Bruno Mars"],["All of Me","John Legend"],["Let Her Go","Passenger"],
-  ["Riptide","Vance Joy"],["Ho Hey","The Lumineers"],["Little Talks","Of Monsters and Men"],
-  ["Dance Monkey","Tones and I"],["Someone You Loved","Lewis Capaldi"],["Before You Go","Lewis Capaldi"],
-  ["Sunflower","Post Malone & Swae Lee","Post Malone|Swae Lee"],["Circles","Post Malone"],["Old Town Road","Lil Nas X"],
-  ["Shivers","Ed Sheeran"],["Heat Waves","Glass Animals"],["Espresso","Sabrina Carpenter"],
+  ["Bohemian Rhapsody","Queen","",["221/4410de9b4b10c763baf8c4911c032248/3700911105004619705","1Music221/622e97c4d6202ae12a47a32e16a01492/602567988847.jpg","1975"]],
+  ["Don't Stop Me Now","Queen","",["221/098a5a8664e8c5dc136169bb8bfae005/16847470439783324197","1Music221/9eae4a23130a4ed7d590bfa701f9acaf/602527717685.jpg","1978"]],
+  ["Another One Bites the Dust","Queen","",["221/e42566d033f05650ca0950e190a4a59c/12362097040607209924","1Music211/b0ca05aa29c94e015a16f6fa06bce05c/602527594347.jpg","1980"]],
+  ["Under Pressure","Queen & David Bowie","Queen|David Bowie",["221/253f1c40ff7d12dc6b32738ee91c31f9/9719431811034371859","1Music221/4f3d04f2290abcb29a64957905c5efc8/602527717586.jpg","1981"]],
+  ["Billie Jean","Michael Jackson","",["211/a0201bf3e6a7f2fca836a536593c3e51/3717140176449046337","1Features125/2a82a59b6e797c39761ac1d3b82e93cb/dj.dzbxcmnk.jpg","1982"]],
+  ["Thriller","Michael Jackson","",["221/f0f5e387ff78101a6397aa3983d47031/17965432547060573077","1Music211/54f2ef79c6688d6f28cdae48c45009b7/196874193211.jpg","1982"]],
+  ["Like a Prayer","Madonna","",["221/9fa712d61783d96e366a39255a1043d0/13459590149591299421","1Music221/33555c2fdf24dd08b680d92473948262/603497804955.jpg","1989"]],
+  ["Hey Jude","The Beatles","",["211/3d08f5d71e0a99d91085d50ecc972bb9/1689604474306790314","1Music126/a68b657ccac668e63bdeb79d58fbc795/18UMGIM30762.rgb.jpg","1968"]],
+  ["Let It Be","The Beatles","",["211/6076fd8f422ad5e37b025953bc93cfbd/3945462995290301839","1Music124/ae984c7acd06a7cde8bf32cb15ba698d/00602567705475.rgb.jpg","1970"]],
+  ["Imagine","John Lennon","",["211/5a54358c9c9f66dbfe4ee677ba889f56/264057399856026028","1Music126/58c824100d31e5fc6a45e5bd6a6658df/18UMGIM52733.rgb.jpg","1971"]],
+  ["Hotel California","Eagles","",["211/a9bebaab3eb5d185a5afc75d122ba892/15660694999198133668","1Music125/8ff088eebd188a271bb6c0e44ad91cb6/603497862542.jpg","1976"]],
+  ["Stayin' Alive","Bee Gees","",["221/36edd6a520933aea43f3318f2b75373b/14646237435212422067","1Music123/94a75fd117da3a3842dcc5e35bf56046/16UMGIM86639.rgb.jpg","1977"]],
+  ["Dancing Queen","ABBA","",["211/d29de3afc08085586c41823b9ab5bb6b/18371402234402526781","1Music125/694db4401fdd011216a0ae501501cb32/14UMGIM07610.rgb.jpg","1976"]],
+  ["Mamma Mia","ABBA","",["221/5ec1d76aeed37eb4b3b31680c4641e66/8293232379529937030","1Music112/dcf790c37c63f7b3e57b5a8747a8ebbe/14UMGIM11148.rgb.jpg","1975"]],
+  ["I Will Survive","Gloria Gaynor","",["221/964e43ceee49aa997d275434c784d9a8/5959778804469681533","1Music114/abd9191da4f11c71b28160d5650d383f/07UMGIM06978.rgb.jpg","1978"]],
+  ["Sweet Child O' Mine","Guns N' Roses","",["211/a5822d672e65fe95511e1f785d23e5cc/8619467974951398014","1Music125/a04dc48403cc02aafa825334fcb4bc16/18UMGIM24878.rgb.jpg","1987"]],
+  ["Smells Like Teen Spirit","Nirvana","",["221/b0369c2450471f93a22864ecec779cdc/17479720470163953122","1Music125/5c535d319c80c7523ea3887615eb7d51/21UM1IM09416.rgb.jpg","1991"]],
+  ["Wonderwall","Oasis","",["211/eae6de595000da21c882f52fc2492428/12629158787072767220","1Music113/ef05663ab741caadd1770e632706dc1a/5051961036107.jpg","1995"]],
+  ["Africa","Toto","",["211/bb3d07a3b3af2c995c9feb72796268c2/11871467005041854011","1Music115/69ced24007a72a04bbab2afbacf30809/074643772822.jpg","1982"]],
+  ["Take On Me","a-ha","",["211/6003331f74c7fbf72499939314f42fdc/15375523369136074903","1Music124/384a9db29eebfb20110b109ecc2df4b4/mzi.pwgjhwsv.jpg","1985"]],
+  ["Every Breath You Take","The Police","",["211/3355ceb6679bdedebc9e20240c173541/2582695436913795899","1Music116/62e1fa252c4449d9de3334ab053ba5a7/07UMGIM08073.rgb.jpg","1983"]],
+  ["Livin' on a Prayer","Bon Jovi","",["221/08300556ddbc1912fab7ae01fdc925cb/1596311848900635251","1Music211/3c96b3cb59c09641cfada33346ab87f9/24UMGIM83177.rgb.jpg","1986"]],
+  ["It's My Life","Bon Jovi","",["221/374cb6b31390b8d5eb28702fa32d20ad/8791835277619319579","1Music211/3c96b3cb59c09641cfada33346ab87f9/24UMGIM83177.rgb.jpg","2000"]],
+  ["Girls Just Want to Have Fun","Cyndi Lauper","",["221/6a17cffc3d8f96cf97963b1894c87081/4651252225789153600","1Music115/06aa194a56af5dfdaeae7fae8c8ea97a/886444329651.jpg","1983"]],
+  ["Wake Me Up Before You Go-Go","Wham!","",["211/35999e3f480b158a2149fa8ff249f882/10746700119453640305","1Music124/bc2831e92646098a96c4adc2e2c901bb/dj.tefnkxmm.jpg","1984"]],
+  ["Last Christmas","Wham!","",["221/884e30b60acaaa0a104e00ad6871542f/4599357113525773661","1Music125/47550cd67ef5bf86c194c7695d63c759/dj.xuditatj.jpg","1984"]],
+  ["Purple Rain","Prince","",["221/7617bae9013f3e37cd8941998f6ed902/15080256781020707908","https://is1-ssl.mzstatic.com/image/thumb/Features/ca/5f/c7/dj.xgrzfdhn.jpg/300x300bb.jpg","1984"]],
+  ["Born in the U.S.A.","Bruce Springsteen","",["221/0568bf8202e9dd99b3a70b4b7a2c2fc9/975570673053529263","1Music115/327268bab9ddb3222a16bdd0212df48c/074643865326.jpg","1984"]],
+  ["Rolling in the Deep","Adele","",["125/89271b8c74c5955aed3b86e44e5012bf/14153268409398031391","1Music126/7a806a9aba5657c0f6c759cfc1ca2abf/634904852160.png","2010"]],
+  ["Someone Like You","Adele","",["211/cc7c82b60f0ca362952f6389dbc603ba/15156534524546439842","1Music211/f8df0ac9ae769dae86d34e913fc54fb1/634904152062.png","2011"]],
+  ["Hello","Adele","",["211/0f24cae7922b5d947cb5f31ed211ec2e/5861073984927278865","1Music116/89e0595b6cfbee43eb3189e5eb8c3a69/634904074050.png","2015"]],
+  ["Shape of You","Ed Sheeran","",["211/c8a1354a28aa639f0d5aff843069a4b7/7018698804833750599","1Music115/20034cdbb2b174a72ec0521ccf471bbd/190295851286.jpg","2017"]],
+  ["Perfect","Ed Sheeran","",["221/516682ee7f6c65d39dcf3b4010bfd84d/17833660519500156871","1Music115/20034cdbb2b174a72ec0521ccf471bbd/190295851286.jpg","2017"]],
+  ["Thinking Out Loud","Ed Sheeran","",["211/6d56885711dc2c15acb94a3735f23051/840485559124453765","1Music221/34290bc331b83ba30d21b9182a77fe98/5021732391735.jpg","2014"]],
+  ["Bad Habits","Ed Sheeran","",["211/253348ea6ce1888ccce7458809b4eb1d/12920733111591747364","1Music125/c5d8c67563e3663233db2401eabe574d/190296491412.jpg","2021"]],
+  ["Bad Guy","Billie Eilish","",["211/c3871f7e3260d6151c665fdca2c3a48f/10721331211699880949","1Music115/1a37d1b1850854f2f541bf4e437dda76/19UMGIM05028.rgb.jpg","2019"]],
+  ["Birds of a Feather","Billie Eilish","",["211/3431d34e847f5d66df830bce688d997e/18106743962423782018","1Music211/929f69f199773a44d67411f70c852d1b/24UMGIM36186.rgb.jpg","2024"]],
+  ["Blinding Lights","The Weeknd","",["221/8fb104e7f0cd51a14a69dfb1adf98d48/4743823105574521814","1Music116/3d327fc3271de4a1a95652fdb93c2d62/24UMGIM13979.rgb.jpg","2020"]],
+  ["Uptown Funk","Mark Ronson feat. Bruno Mars","Mark Ronson|Bruno Mars",["211/3855feef58849f0ca1a55c1a9ff4e269/16034847874510944537","1Music5/430357e0e1428d4dca5687f4bd41e017/886444976145.jpg","2015"]],
+  ["Happy","Pharrell Williams","",["211/eda019cf279466d1208d2e2e74c26c3d/16469762943852039623","1Music221/76ff5ee07ab42ac22598486a9ccc06e1/886444516877.jpg","2013"]],
+  ["Get Lucky","Daft Punk feat. Pharrell Williams","Daft Punk|Pharrell Williams",["211/339c2970e296b109c11a878534d40067/12572643936196072909","1Music125/1cda5a7d90ad8643efb27641afb13418/886443973442.jpg","2013"]],
+  ["Crazy in Love","Beyoncé","",["221/7a7fb397c707f7a693be1db3cd1c7fcb/10719026518601275807","https://is1-ssl.mzstatic.com/image/thumb/Music/03/c5/d4/mzi.ldvrmhxt.jpg/300x300bb.jpg","2003"]],
+  ["Halo","Beyoncé","",["221/bccf164efa6811c25e03f87ca8e6e637/13683091017583481694","1Music125/350f55da2104162a5872cb35fef30410/mzi.morbeoaw.jpg","2008"]],
+  ["Single Ladies (Put a Ring on It)","Beyoncé","",["211/5245d4534ccf563205d2bbb04ff287b4/9969296866038379217","1Music125/52f976b0016ea3bf1897f69fb5d002d7/mzi.csyboqno.jpg","2008"]],
+  ["Umbrella","Rihanna","",["211/7b452241882c409b3a9b23306b14286a/8588243939716013218","1Music126/2bc081c825f0ba43d451587a54613778/16UMGIM59202.rgb.jpg","2007"]],
+  ["Toxic","Britney Spears","",["221/aec47f56842d49b4558b7a7523fd6728/6693111381462300599","1Music125/388b7a8f10ffa4e0762465e29ac6a793/828765374828.jpg","2003"]],
+  ["...Baby One More Time","Britney Spears","",["221/2aefe5c7e83b07b1227e117347aa3006/11333878250757508664","1Music211/5173280b9b5ec5e4d3f8a2612d044543/888880423368.jpg","1998"]],
+  ["Wannabe","Spice Girls","",["211/93bf08b8cc152ddb9a492c221707b139/6707128577346358435","1Music221/88856e99732377373634435da9fcefa0/13UABIM59225.rgb.jpg","1996"]],
+  ["I Want It That Way","Backstreet Boys","",["211/f66e8fea062b8bb4d6a731debcb2a7e3/7581068069785613978","1Music115/fe63f8b1ca340bd8c9b1d7f1387c0f93/mzi.wfyqyopt.jpg","1999"]],
+  ["Mr. Brightside","The Killers","",["211/5b174e80104772141077d822ba1f9520/5975692497663881329","1Music116/071a5aee6e42060c35b96a6e45b9ea59/06UMGIM10441.rgb.jpg","2003"]],
+  ["Seven Nation Army","The White Stripes","",["211/7f282276e46379c2b77040c762df0c48/3138918352191055941","1Music116/48b5b90eba1e08ff12179e479afdad5d/196589901750.jpg","2003"]],
+  ["Viva la Vida","Coldplay","",["221/a3308eedd8b7e0b3f09d5e1b0f4d660a/8517946447501075134","1Music115/52aa851f15b76322f91fdf84b15b7b19/190295978044.jpg","2008"]],
+  ["Yellow","Coldplay","",["221/66f31a76a6edcb4cf35323310a7ae9a8/10593596652344378873","1Music221/f5938c49964c31d14b3378b634f71fb7/190295978075.jpg","2000"]],
+  ["Fix You","Coldplay","",["221/e542e340a45c695ee0b86155e222ebc0/14955746616030397665","1Music115/0c8248a84a5bd30d8056f32d650d2fc9/190295978068.jpg","2005"]],
+  ["Clocks","Coldplay","",["221/eb07861b015fd0e1418f9436a1f78af5/9321333057187916970","1Music114/441a721890915e8b341ce5df6827e97e/724355209153.jpg","2002"]],
+  ["In the End","Linkin Park","",["211/0cadc05e846ab090c7e96017df2e0ab5/1775739195432502696","1Features115/f031b2b2bcf06102426fe0b2c7437415/dj.vrgpwamf.jpg","2000"]],
+  ["Numb","Linkin Park","",["211/93dc455c483f8931ef2ecec30e2ed4bb/3013383482601094146","1Features125/dd7d7259d27f5b3ece649e304d2cb40f/dj.rxzrauer.jpg","2003"]],
+  ["Bring Me to Life","Evanescence","",["211/ddfe35a4491ecf31658cd0a146402b29/1325478918326867414","1Music221/52491ac9cef84a6a1a16a1c01ad44abc/14CMGIM00930.rgb.jpg","2003"]],
+  ["Hips Don't Lie","Shakira","",["211/c63d8b8303e5d08933b042719db80220/11798519461026699177","1Music122/2fbdd685b79c3953285c351ee8b8aa4d/886443339750.jpg","2005"]],
+  ["Waka Waka (This Time for Africa)","Shakira","",["211/c172b57b0476aeed94d232d1a83562d1/841448688891614243","1Music122/c46e63212a8adfaa2c0f21d4b62450b3/884977620108.jpg","2010"]],
+  ["Poker Face","Lady Gaga","",["125/c23aa16058112852cfff738753c510ba/5523332790389496113","1Music118/b270780184605b10db7b35db1d549de6/00602517959408.rgb.jpg","2008"]],
+  ["Bad Romance","Lady Gaga","",["211/cc7616a3687135a7d6aa18c4d370a9da/12054412432986820041","1Music122/e91a4eb931e789fb3aade8172e534bb6/09UMGIM42295.rgb.jpg","2009"]],
+  ["Shallow","Lady Gaga & Bradley Cooper","Lady Gaga|Bradley Cooper",["211/0ccced596e6ff0a00c9ad20bfd475052/26600833784075363","1Music115/b19fef5179dea940e8ab9e4e07b04d96/18UMGIM53752.rgb.jpg","2018"]],
+  ["Die With a Smile","Lady Gaga & Bruno Mars","Lady Gaga|Bruno Mars",["211/076a99edb946431b6f1f54fa187ca5bd/8102882277995122875","1Music221/11aef294f57cbab9c9fc529162984e62/24UMGIM85348.rgb.jpg","2024"]],
+  ["(I Can't Get No) Satisfaction","The Rolling Stones","",["211/3daac43c6266572f9e1bdd480a3829f1/12071433016458168720","1Music122/279a230f9e52e5161ff0828fe251979a/13ABKIM00065.rgb.jpg","1965"]],
+  ["Paint It Black","The Rolling Stones","",["221/daf5ece26853c6a4d481389001453f75/3869995397273029315","1Music211/cd890449e58f72572c609c8c31f24ce3/13ABKIM00063.rgb.jpg","1966"]],
+  ["Johnny B. Goode","Chuck Berry","",["211/16d8d658ae49013f363d30767dd27ca4/6604756314526994525","1Music116/a72229d0581d3ccee14301dec432f222/14UMGIM06983.rgb.jpg","1955"]],
+  ["Jailhouse Rock","Elvis Presley","",["221/c6ec2a92ffe42c99a7fe7184ad6c422e/18174769531383869947","1Music221/10531d93d6d2996d516f5ea58bc4dbfa/884977724691.jpg","1957"]],
+  ["Can't Help Falling in Love","Elvis Presley","",["221/cd8bb0f9d255c6b9e55b3403d135c638/11483484905380371632","1Music221/10531d93d6d2996d516f5ea58bc4dbfa/884977724691.jpg","1961"]],
+  ["What a Wonderful World","Louis Armstrong","",["211/f0283e36b2b5ae0d52769b55535cbdf4/12728860797817529355","1Music221/2e8c2f464148d40d61dc2cc8e2493aab/12UMGIM11012.rgb.jpg","1967"]],
+  ["My Way","Frank Sinatra","",["221/33344f56a3647ac59c85a39239ca33ba/16341579019992103385","1Music124/5fafede5320ca7fd438a115bd8fe5ab3/00602537569076.rgb.jpg","1969"]],
+  ["Respect","Aretha Franklin","",["221/69a4fd25dc51b269057d42720d9c2ee5/7895690065245675140","1Music115/683eca66cff09f78d63c1e4ed7912801/603497987856.jpg","1967"]],
+  ["Stand by Me","Ben E. King","",["211/18adfbac3fbd756cd2596daf41f902f2/12768986125082088263","1Music125/467580f91f8d5c80ac4834e0f1a56816/081227297060.jpg","1960"]],
+  ["Superstition","Stevie Wonder","",["221/5505a36146426c76cba585c1c9e4364b/9734669526599895887","1Music115/293a9224329d3edeed4ccaba1c045e97/00602547215086.rgb.jpg","1972"]],
+  ["Sweet Dreams (Are Made of This)","Eurythmics","",["211/65eb89f363b551d184e9362ddb0259e1/13469396206931835946","1Features125/add33dea0a4d9509643b939ba6735733/dj.vpugapfp.jpg","1983"]],
+  ["Highway to Hell","AC/DC","",["211/d054a909fe00757ab5fb3760ea7cdf13/15087080229874880055","1Music126/b9c8ef42bbc964df11f8717571f6730f/886443673458.jpg","1979"]],
+  ["Back in Black","AC/DC","",["221/082eac8c1d0ef72f7b37b8e037ff1579/7587164327744022409","1Music115/1e145814281a58e03ab1145f5d1af421/886443673441.jpg","1980"]],
+  ["Smoke on the Water","Deep Purple","",["221/083f1b23decd8fe62bad0437d1c5d959/9991776491763640927","1Music125/8ae2d7711fc41977d627567b54910da3/00600753627372.rgb.jpg","1972"]],
+  ["Stairway to Heaven","Led Zeppelin","",["221/fc3ecfdea8782d655929cf325bcc234a/17376241315973674081","1Music5/16dee335173b57ce80b5dadf684c0b33/dj.oblporhs.jpg","1971"]],
+  ["Wish You Were Here","Pink Floyd","",["221/ca73b0759f435ba24a9c494d2e2b1d6e/16835053037302358726","1Music211/aae0ab6ad906a18981bf70b56aa43f7a/886445635843.jpg","1975"]],
+  ["Another Brick in the Wall","Pink Floyd","",["211/8a214193f9e0fbebaad56ca8b8420dbb/2628810625325580575","1Music221/3e17ec6df980c64f19e0a6fd8bbf0c10/886445635850.jpg","1979"]],
+  ["Wind of Change","Scorpions","",["211/da6f4cff1bf4db3c2ea2cca181e23ef1/4668604288525941745","1Music124/232650d17741bbfc3302ea5b7d27b691/00600753474792.rgb.jpg","1990"]],
+  ["The Final Countdown","Europe","",["211/d35bd9a3d10595d8ba290f5c6b8e764b/7609183394807520180","1Music221/004da9d29b4f99f4d39672ec786fb88c/696998575721.jpg","1986"]],
+  ["Eye of the Tiger","Survivor","",["211/d88ab1928608562d7442d4cd76d7fefe/1482115361099733526","1Music125/f5ee4c14c8958554bc0b7d4bd6226fbe/884977504392.jpg","1982"]],
+  ["Don't Stop Believin'","Journey","",["211/b39f9aff54201499ad964279228fdca4/106745718629962303","https://is1-ssl.mzstatic.com/image/thumb/Music/d7/62/fb/mzi.oyteszvq.jpg/300x300bb.jpg","1981"]],
+  ["I Gotta Feeling","The Black Eyed Peas","",["211/2a00e6813390f4fa54c5212859212f49/14754088533424403872","1Music116/41b96c5eb03c0b5d1ad2599f4eb50fec/09UMGIM13834.rgb.jpg","2009"]],
+  ["Where Is the Love?","The Black Eyed Peas","",["221/59ed6e29eef41ada6e4a1a60fa1e7d30/6832991249166311292","1Music122/05a3a1aac472a7f24d8b9eacff8a1e43/22UMGIM30753.rgb.jpg","2003"]],
+  ["Lose Yourself","Eminem","",["211/135a61548ca205231fa2f4ac0ea9e1e7/13242749689945681184","1Music125/0823fcd9cb44695b32bfb3bf51d9f800/00606949351229.rgb.jpg","2002"]],
+  ["Without Me","Eminem","",["221/607d603810dd1d8d83c7c7029e709da3/13336706630570276296","1Music118/dd5ce621f7d2f7677a08e7a7eaa7870b/00602537526994.rgb.jpg","2002"]],
+  ["In da Club","50 Cent","",["211/6e6a04363bd41f7102df6bcffe76e636/3291234595362168142","1Music112/6e56af83bdff56c27c6ab30cd0d356ce/06UMGIM08757.rgb.jpg","2003"]],
+  ["Hey Ya!","OutKast","",["211/7b9059baa8f225405bbbd63a178bd8ce/1797078659976130902","1Music221/71ae6a4699a6e9d8d7f341c0f2df45c4/196872579123.jpg","2003"]],
+  ["Crazy","Gnarls Barkley","",["211/c385e47dd77ebaf38f08474425e550a2/10162883177194147529","https://is1-ssl.mzstatic.com/image/thumb/Music/2e/f6/0a/mzi.oueebzhg.jpg/300x300bb.jpg","2005"]],
+  ["Rehab","Amy Winehouse","",["211/d46ec3067dae3f5202c986b7c84a8f33/9679547428483928372","1Music112/cf3f0994980dd8ed088dae89af256b73/15UMGIM24224.rgb.jpg","2006"]],
+  ["Valerie","Mark Ronson feat. Amy Winehouse","Mark Ronson|Amy Winehouse",["221/e6eb9841c8ebac1654de1dc9d63aecf8/11809468276037674272","https://is1-ssl.mzstatic.com/image/thumb/Music/78/79/33/mzi.dnmerebh.jpg/300x300bb.jpg","2007"]],
+  ["Chasing Cars","Snow Patrol","",["221/b0ad0f3b1c7c27f425eb06ed232fce06/15213746956420878583","1Music122/0972d653f610399585d36656c21e0b31/06UMGIM43473.rgb.jpg","2005"]],
+  ["Somebody That I Used to Know","Gotye feat. Kimbra","Gotye|Kimbra",["211/c31b35e5c8073d6ee0747024dd1f66c6/15521703029726361948","1Music114/64be803ace366a006694d31de3895b94/11UMGIM39453.rgb.jpg","2011"]],
+  ["Pumped Up Kicks","Foster the People","",["211/e6b8f4960f01df811daafdf393c1ae48/15114341654383859022","1Music126/4320e1a59bfc70715d13e481b0fe4d73/886449765355.jpg","2010"]],
+  ["Royals","Lorde","",["211/e7b698e4ce3f613ff84a86625aeee1e4/13424106343364364831","1Music211/96a50916169b724cb722b8c474406352/13UAAIM68691.rgb.jpg","2013"]],
+  ["Shake It Off","Taylor Swift","",["211/f718afd01a4f410dbafa809d548edb34/10394250021096638941","1Music221/fe575f85b843e190b0432605d5f6ec59/14UMGIM34830.rgb.jpg","2014"]],
+  ["Blank Space","Taylor Swift","",["211/86fbae3325de15c07c2addff0184015d/702089464259026596","1Music116/8e356cc20be4b83bd29eb578623df2ac/23UM1IM34052.rgb.jpg","2023"]],
+  ["Anti-Hero","Taylor Swift","",["221/8ff90fc273c74e3235823bd994fb2ac8/1917727201378902263","1Music122/8b594b755a1a9a39e003b227d09d5b37/22UM1IM07364.rgb.jpg","2022"]],
+  ["Cruel Summer","Taylor Swift","",["221/44af816896091b855048ada08dceacf3/1341699644335558812","1Music125/493dab54f9209043618180993b8116c9/19UMGIM53909.rgb.jpg","2019"]],
+  ["Levitating","Dua Lipa","",["221/66a44dc20a2d5c405ed923264af8d88c/16292166735994758914","1Music116/6d234fa2c702261a8712e5d4b17350fe/20UMGIM83608.rgb.jpg","2020"]],
+  ["Don't Start Now","Dua Lipa","",["221/9acd35a1359b3ed8c0b6b72e53e4b767/13835733052143207210","1Music126/dddf93bbc7d3f6b7c4a12defe2731df0/19UMGIM94980.rgb.jpg","2019"]],
+  ["New Rules","Dua Lipa","",["221/b83e5791210f28a85338fd6b3675908c/5779463687347879162","1Music114/7b2b7ad8385d62d9460ce980a3d5bd1f/20UMGIM71292.rgb.jpg","2017"]],
+  ["As It Was","Harry Styles","",["221/671016063869ca446c03e13d6322cb51/1135399237022217274","1Music126/2a19fb852f709e44f2a982abe679b88e/886449990061.jpg","2022"]],
+  ["Watermelon Sugar","Harry Styles","",["211/8d2bcff6d2847c4ed6e39d70d019236a/13222308322329291378","1Music115/2bc4c9d43bc6ab133f71df0b89b173de/886448022213.jpg","2019"]],
+  ["Flowers","Miley Cyrus","",["211/a88f4a143590b24bd0152ffcac2a1db8/18239584916142982068","1Music126/c440d88a2bcd5d10e814e482271134f4/196871387361.jpg","2023"]],
+  ["Wrecking Ball","Miley Cyrus","",["221/f8e8a23cb85d17dd9625b39ec26b171f/1866607988873686159","1Music115/e3e084002d0375f96b8ba3345452aa98/886444197816.jpg","2013"]],
+  ["drivers license","Olivia Rodrigo","",["221/366261be0996d73dde6f03417867c800/8201528327761821135","1Music115/02ed8cabc0892fdd7ce6ab334a9a4e19/21UMGIM26093.rgb.jpg","2021"]],
+  ["Stay","The Kid LAROI & Justin Bieber","The Kid LAROI|Justin Bieber",["211/d74a84d59afa761eb632baab55c2a23b/11865500880477235553","1Music125/89596ab9fa3c8d084d95a6450fa2013c/886449400515.jpg","2021"]],
+  ["Sorry","Justin Bieber","",["211/66eb29c0c2f9d9df8af33bf2562c9d7c/4099789285264521999","1Music116/751184b077df1effbb20dac03247425d/15UMGIM59808.rgb.jpg","2015"]],
+  ["Despacito","Luis Fonsi feat. Daddy Yankee","Luis Fonsi|Daddy Yankee",["211/01556f75ea920267c6d409ee6fd8ff26/15962911936959580358","1Music115/11d658ed2ee031bbda653377b879f7fe/00602557543537.rgb.jpg","2017"]],
+  ["Counting Stars","OneRepublic","",["221/24cd5a5dc2c6e6f590a2975cc32074b6/11300348433604014023","1Music221/7a58371ad03fef38de259bdfc6355324/25UMGIM82322.rgb.jpg","2013"]],
+  ["Radioactive","Imagine Dragons","",["211/a5364584fcf8911ddb1898a322b83ce4/3779398848548453072","1Music122/c11afaa126fc9829a6cf9d1dd228ec06/12UMGIM46901.rgb.jpg","2012"]],
+  ["Believer","Imagine Dragons","",["221/c03f367ab66bfd0aa54c30f8250c4410/12768434238801682952","1Music126/117ab8056811892918b90fad7baf0c25/17UMGIM98210.rgb.jpg","2017"]],
+  ["Thunder","Imagine Dragons","",["221/787d8b897b57d3bc1f9d6378fad1b4f5/5131352572683029126","1Music126/117ab8056811892918b90fad7baf0c25/17UMGIM98210.rgb.jpg","2017"]],
+  ["Wake Me Up","Avicii","",["221/681e601fe1f24ebb37deadf00bdf57b6/8266263075137964740","1Music211/185b1ef55d9719d8aebf8e29e41874ef/13UAAIM59255.rgb.jpg","2013"]],
+  ["Levels","Avicii","",["211/ed6ebdf20a975dae7fc6583de355dca1/10095989580213298663","1Music211/673843389ed7fc68592793f1fcf4705d/11UMGIM36900.rgb.jpg","2011"]],
+  ["Titanium","David Guetta feat. Sia","David Guetta|Sia",["221/27c2c78c318ecd6cdeb4ebcdfec2de24/6964948339914536280","1Features125/f0a42c10829c8b847ac2271f45d4687e/dj.zykhivrk.jpg","2011"]],
+  ["Chandelier","Sia","",["211/f0de661c299ab7ae80d94f35f79875b1/10598240417031133475","1Music115/00bf72a23e50e5e7ae78dc35bbf9bcda/886444578219.jpg","2014"]],
+  ["Cheap Thrills","Sia","",["211/a661ab7610466a650bd6c9c0552a7f58/15349844265528483258","1Music115/8b81ba550a7fa0e56593d44f1565cdd1/886446097428.jpg","2015"]],
+  ["Lean On","Major Lazer & DJ Snake feat. MØ","Major Lazer|DJ Snake|MØ",["221/35dfc61deebb559dfa2f861455e4f446/6623356595320627453","1Music128/25c32f7a6f42e5465eb1f1ad030a9715/5060421561127_cover.jpg","2015"]],
+  ["Faded","Alan Walker","",["221/ab18d9e901f027ea3a516e08585a0072/14299744081264843911","1Music114/0da31af7d0ff9beec4271b6d0336f6fc/886446321981.jpg","2015"]],
+  ["Lovely Day","Bill Withers","",["211/4d4f4def089f5eadeb65c2e754c4eb0b/17532940935688196080","1Music125/3a9340a173f75bbb86a215a4ba20acea/884977735840.jpg","1977"]],
+  ["Ain't No Sunshine","Bill Withers","",["126/c197a504bc1307093f6f904026c782dd/11719507637175591282","1Music125/1bb9167ce0eb5418960de9adb61d0fdd/mzi.kqpazwnw.jpg","1971"]],
+  ["Sweet Caroline","Neil Diamond","",["221/a3cce22f754eda136796e8a16b0adc6d/18085652679021770735","1Music122/b6ef8ae221c09b34757addd9299910ad/17UM1IM21040.rgb.jpg","1969"]],
+  ["Take Me Home, Country Roads","John Denver","",["221/e7d1c476fa550be0adf85fdcc7d18f3f/3863812668516994856","1Music115/52edf3b65b73c52de3f64473412eec7c/886443406193.jpg","1971"]],
+  ["Ring of Fire","Johnny Cash","",["211/2c126894fd6bb37cd5566d91bd8c0875/17832761364720403968","1Music125/5f13bc300f68ed45466cb491e9201558/dj.yjweejkt.jpg","1963"]],
+  ["Jolene","Dolly Parton","",["221/fcbfb6fa52931bb8f2507feaf5183892/10820724967096911306","1Music124/0bf81e88de6eaba39fd4e7407bfbcc31/886445438048.jpg","1973"]],
+  ["9 to 5","Dolly Parton","",["221/6767af1ee9a72d0499c66d1905759a9c/4881725356436668826","1Music125/f5ee4c14c8958554bc0b7d4bd6226fbe/884977504392.jpg","1980"]],
+  ["Heroes","David Bowie","",["221/35b0b829e46c0b67d380410234fe0576/9860008701677951090","1Music115/816f50da0ae75758f06ce1f5cc29a62f/825646205752.jpg","1977"]],
+  ["Space Oddity","David Bowie","",["221/d063ce2cd6030674531dae426912f6e7/17291668845176942949","1Music125/29ef556eef709c6aa36f07eab04d453d/825646286102.jpg","1969"]],
+  ["Rocket Man","Elton John","",["211/8c096da710b6422b51b6f1f97a66380d/5290536375751623365","1Music116/75b6da76a3e06a77cbe5ad6c42cb0692/06UMGIM48050.rgb.jpg","1972"]],
+  ["Your Song","Elton John","",["211/5335f8d690e8a348f1dd7fef886caa48/292979939397370485","1Music123/fb0722aee0b71f4b7066ab6dd8f99bff/06UMGIM35178.rgb.jpg","1970"]],
+  ["I'm Still Standing","Elton John","",["211/252cff7a887a10860aed2f18da51f973/15765186317138488450","1Music116/45e5b4090564a7a3186c1dc116c3ffb7/06UMGIM49712.rgb.jpg","1983"]],
+  ["Tainted Love","Soft Cell","",["221/057ad8258f5130abf830e12a31ceeb5c/15503561629945838399","1Music125/a409dde2855f9cdf2af347c65a85bc22/08UMGIM15686.rgb.jpg","1981"]],
+  ["Don't You (Forget About Me)","Simple Minds","",["211/d238f015847a6a1009e49f00391a59bb/6669203872576217423","1Music125/286e43ed12e3f007966febd6c25b96bf/15UMGIM42148.rgb.jpg","1985"]],
+  ["Relax","Frankie Goes to Hollywood","",["221/6db648ab8b25648a420a15fd086f0947/17017095599203750844","1Music115/cf7059f9ea77d9ae076981c62c6e7f20/18UMGIM12100.rgb.jpg","1983"]],
+  ["Karma Chameleon","Culture Club","",["221/7cdee5cea3799f6806028cf8c57311ac/10937102495873020253","1Music126/646001cbc2d2797323612ed830659724/13ULAIM49270.rgb.jpg","1983"]],
+  ["Total Eclipse of the Heart","Bonnie Tyler","",["211/473d35b3b37912d98fbf88299e3cad7e/5191559564499798673","1Music125/2074b81dd546b0c2d85bdda3a5e17661/886448236856.jpg","1983"]],
+  ["Zombie","The Cranberries","",["221/35bb65321abe59e49ced8bee2742ea24/15102830936602294569","1Music221/a377a3098e52f78722502b34d320bf7b/25UMGIM64146.rgb.jpg","1994"]],
+  ["Linger","The Cranberries","",["211/9dc79d4bb854be87be7daddc0d60a2e7/8920905009810686312","1Music221/b6c885defde6d40dc95ad89ede4270ae/06UMGIM09433.rgb.jpg","1993"]],
+  ["Creep","Radiohead","",["221/1f18e22b264e88f8ee89c196fa9abd7a/14184372154331980897","1Music126/287a7ca9ed951a21e3bb4559a1a0ac0e/191404134351.png","1992"]],
+  ["Losing My Religion","R.E.M.","",["221/06ee70cac0f6783c1935e0be0f3228d4/1437283987200939868","1Music115/d49cf63fa412573793921576c297b475/00888072396272.rgb.jpg","1991"]],
+  ["Everybody Hurts","R.E.M.","",["211/339d9e20cefaafee679d52e12cd72e75/8997101116035124509","1Music115/d49cf63fa412573793921576c297b475/00888072396272.rgb.jpg","1992"]],
+  ["Basket Case","Green Day","",["221/d25b2a88232af4549df2670b8115a0e8/1677607799407141057","1Music116/0505d56b4ba941a8a09a20a0206e1dcc/093624850212_01.jpg","1994"]],
+  ["Boulevard of Broken Dreams","Green Day",""],
+  ["Californication","Red Hot Chili Peppers","",["211/a80fc3530d462baefcb53309a8dab291/14016528946754054551","1Music115/048effa0da05a993f2e0172cd0613377/093624931942.jpg","1999"]],
+  ["Under the Bridge","Red Hot Chili Peppers","",["221/9b5b76af214c82c92dae5971e3bb25ba/12325461313798845398","1Music125/2b2b564ce21ebd40a8cfcb47dedcb7df/093624932147.jpg","1991"]],
+  ["Song 2","Blur","",["211/0d7b068e914fb01aef1efd21e9b106c6/2441215755969695380","1Music126/ed73cc6182444f4590fc23ad8a3ee7e4/5099997227359.jpg","1997"]],
+  ["Bitter Sweet Symphony","The Verve","",["211/4a9d99765824ba972f5d9291cd53bd20/1780484886833355916","1Music124/df6490a72c11411b3b63407148379b95/00724389437553.jpg","1997"]],
+  ["Torn","Natalie Imbruglia","",["221/96be3b9e035d3d29ad16796ea4495968/17099026484635430619","1Music125/115df15ee05fb0f1ae663ad2c5e969b4/mzi.ihaejhxb.jpg","1997"]],
+  ["Ironic","Alanis Morissette","",["211/0889cbf8c16c4efbf03ed621170fbb58/7779258319361787899","1Music126/e87c93d66da76ac233f0fe38c92c8fbf/603497826834.jpg","1995"]],
+  ["No Scrubs","TLC","",["211/c04a8446a615752afd2d0f82026e680d/9464840323963822350","1Music211/e802ccde825ecd994e828db299d7a6f2/artwork.jpg","2013"]],
+  ["Gangsta's Paradise","Coolio feat. L.V.","Coolio",["211/db4b4ff65fb3fb507dbbea4c45ffdab5/6510633620048230208","1Music221/b7d4cee538ab34af56051588e9a34fec/081227515461.png","1995"]],
+  ["Freed from Desire","Gala","",["221/8aa6edd7c6b8a99ad5eed092e1460e9d/12498017299340318780","1Music124/70a333a929d8bfdefe2d79d2a9a72518/mzi.hroawrfd.tif","1996"]],
+  ["Blue (Da Ba Dee)","Eiffel 65","",["211/697ddc78f72b94469379cf60ff448928/7641080930888498136","1Music125/a9ecb3730ea041179a6803f513bae597/mzi.iwxdpjun.jpg","1998"]],
+  ["Mr. Vain","Culture Beat","",["211/987417c3579bbf02bbf97fbd7619ee93/16441996714560283683","1Music221/24fc8988b856e9ea5bd7fb7a65b62159/4250330589706_3000.jpg","1993"]],
+  ["What Is Love","Haddaway","",["211/763a85b1c1b636e7a6f8f772d18f4b0b/15968472325039099788","1Music122/001f65904789a274e4436755856f1bae/0881226542921.jpg","1993"]],
+  ["Rhythm Is a Dancer","Snap!","",["221/73e271adfcb79916e9082fb603ac5fd6/10512374362151303524","1Music221/b865413ad80a96aff042a82e4aa36ac1/4050538293401.jpg","1992"]],
+  ["The Rhythm of the Night","Corona","",["221/d14357010fe52faf5f4c3ed0b461807a/3897736220387386946","1Music221/47b192d8d838ab795e9402e353cd72d6/8033196532156.jpg","1995"]],
+  ["Barbie Girl","Aqua","",["221/3db77df0d9a3b60e071441fd79b9ebff/3692738463507322199","1Music114/7757ba770163a195950b95786aa7a90e/17UMGIM98492.rgb.jpg","1997"]],
+  ["Coco Jamboo","Mr. President","",["221/ea492c8111f28bbd01006faa385bb522/167976534484842138","1Music211/997753607cfea7c67100b96bfe605203/5026854678412.jpg","1995"]],
+  ["Sunny","Boney M.","",["221/20a25713dc66b2aee06f068d0de3bcb4/14040464683433159577","1Music125/4b3126981511c0a766dd9808188850af/dj.rwsaogpu.jpg","1976"]],
+  ["Rasputin","Boney M.","",["221/bcd4e14812cea58fa41d0bff03df1779/13074290728305647647","https://is1-ssl.mzstatic.com/image/thumb/Features/21/d9/4d/dj.ncdclret.jpg/300x300bb.jpg","1978"]],
+  ["Daddy Cool","Boney M.","",["221/aa99a748131de53f6924c07e0e36a51f/11972785514262962237","1Music124/be63537149057fd243d8ab07d5a8dffb/mzi.nnfnjavr.jpg","1976"]],
+  ["Y.M.C.A.","Village People","",["221/5d98fe1f27c619c0df619548c38a8c81/7269313585203455205","https://is1-ssl.mzstatic.com/image/thumb/Music/a7/03/22/mzi.wafixwot.jpg/300x300bb.jpg","1978"]],
+  ["September","Earth, Wind & Fire","",["211/78d49529bd72c49053923a7f3d24755b/6924139238970009441","1Music124/c63b0ddbba2d49fcf2559c925dd4e6e1/886447605004.jpg","1978"]],
+  ["Le Freak","Chic","",["211/f56bbebacf7fed626024c666c3ac2160/13566716684595177938","1Music2/9a488d1f325738e7110ab0ab9a58bee9/081227323325.jpg","1978"]],
+  ["Dancing in the Moonlight","Toploader","",["221/da8514197f210dd60da20543c6b929ee/18076894606965515398","https://is1-ssl.mzstatic.com/image/thumb/Music/c4/f2/f6/mzi.beauwlxa.jpg/300x300bb.jpg","1972"]],
+  ["Sex on Fire","Kings of Leon","",["221/9fe752257a5847d3d57022ae95bb160d/1409968636503833590","1Features125/74254c8be03d44e8304d4cde508b8cfb/dj.swemfdrr.jpg","2008"]],
+  ["Use Somebody","Kings of Leon","",["211/231db3c5a99c3fba5d3bf6e9cdbeb841/12581310710694950303","1Features125/74254c8be03d44e8304d4cde508b8cfb/dj.swemfdrr.jpg","2008"]],
+  ["Hey There Delilah","Plain White T's","",["221/55a92b1697249823be0a73fa248a6df3/4954182368655280204","1Music124/b7022d3707a990c962ede68da56b1228/00888072392977.rgb.jpg","2005"]],
+  ["Apologize","Timbaland feat. OneRepublic","Timbaland|OneRepublic",["221/0e4c436255bdb550b555d0ea370cbf19/8298751810921804739","1Music211/639dc80e51b23d5cccd26b8c7ba69065/26UMGIM06914.rgb.jpg","2006"]],
+  ["Firework","Katy Perry","",["211/86d5a1877f319d5a74f1b0d943534d14/16759469200115260975","1Music116/baacae0e6c446c1f60d6d7f9e6cc01d2/13UABIM57878.rgb.jpg","2010"]],
+  ["Roar","Katy Perry","",["221/21a876071fe32bd2753c0b4b73c22b90/9666996724668759977","1Music221/3621812951b4df22cafb8e9503b53147/13UAAIM70445.rgb.jpg","2013"]],
+  ["Call Me Maybe","Carly Rae Jepsen","",["211/51a6662d63769edf2e40288d34368531/1830159222496682754","1Music114/286082079b1e958b2fede3c07c6b279f/12UMGIM48508.rgb.jpg","2011"]],
+  ["Payphone","Maroon 5 feat. Wiz Khalifa","Maroon 5|Wiz Khalifa",["221/ec64efe0aa33f8dacf08cff5a34f169f/10418581457151079363","1Music221/c78c76fe7df5f37d82464ce337ba0d94/12UMGIM26179.rgb.jpg","2012"]],
+  ["Sugar","Maroon 5","",["125/261b1becd490172bd8b45a6a3e608da3/619783954445900898","1Music124/09aff5b2a9a0a3577d0f70a937e391b1/00602547297396.rgb.jpg","2015"]],
+  ["Moves Like Jagger","Maroon 5 feat. Christina Aguilera","Maroon 5|Christina Aguilera",["211/18c42f8727eeb6aec7a8f38843495329/18090131545377638234","1Music125/5f6e4c8beba6f722caf4c5773dea7fa1/14UMGIM27067.rgb.jpg","2010"]],
+  ["Grenade","Bruno Mars","",["221/6faa8f47099486a6e957c17e544e5398/16091907750497124617","1Music125/98aec2e13be403111b4469348fc87abb/075679956484.jpg","2010"]],
+  ["Just the Way You Are","Bruno Mars","",["221/11937d053a3f599aea9e8807b0c1e352/2181317319664947220","https://is1-ssl.mzstatic.com/image/thumb/Music/5a/48/e3/mzi.gjjmrpau.jpg/300x300bb.jpg","2010"]],
+  ["Locked Out of Heaven","Bruno Mars","",["211/2ac463925607f9c938253899dad926ba/10428618746478086475","1Music115/15c656e911be8b235dbb1a7eb6f9e4a4/075679957283.jpg","2012"]],
+  ["APT.","ROSÉ & Bruno Mars","ROSÉ|Bruno Mars",["221/7a1538f3f41aa2eb0f248eb6712ee043/7740628412097685267","1Music221/2d1a7d91587e0cebd434327bd66d9e86/075679628312.jpg","2024"]],
+  ["All of Me","John Legend","",["211/ff946ca7e49afdf8ea5b11e6f56a0417/17369156110722174773","1Music125/2271b90685b306eee611489b91df0b73/886444160742.jpg","2013"]],
+  ["Let Her Go","Passenger","",["211/2490db0fc743dddd8b79fa01ca6d230b/9395598075557081573","1Music/dcbaec9bfbe4368ec75cc2c55b51c246/4250783601413_1448.jpg","2013"]],
+  ["Riptide","Vance Joy","",["211/6911aaab97e2350a2f382ba0ee1a0926/13535035844593719075","1Music221/a62707a17c6c63d24fb996804eed9186/075679633996.jpg","2014"]],
+  ["Ho Hey","The Lumineers","",["221/a19aee35cbb3c47e9e630b26473c5ff9/11752666553586605937","1Music221/ee5b95dc40864e7198c907f9dde84375/18513.jpg","2012"]],
+  ["Little Talks","Of Monsters and Men","",["211/b839c0d9c8f2614d7d50d285e0e399fa/11911457082974515305","1Music122/e0f1c68d24893a5c421268f7551bc85c/12UMGIM15363.rgb.jpg","2011"]],
+  ["Dance Monkey","Tones and I","",["221/45724fc82e85d5b1dda0775958e9b692/1626542530959622659","1Music125/d23ab839660def932ccbd0825fc3e8f5/075679838872.jpg","2019"]],
+  ["Someone You Loved","Lewis Capaldi","",["221/957f3c65d179e26e6517ebf2b10eaeb8/8568102570237224733","1Music116/05f7af37526e5e6ee4cd9e4bc3da0756/18UMGIM52528.rgb.jpg","2018"]],
+  ["Before You Go","Lewis Capaldi","",["221/229c01b54c1a7078a1141dde334d5779/1337040476329159562","1Music124/0ed5c844481c81ada216d51aaf3b2208/19UM1IM09589.rgb.jpg","2019"]],
+  ["Sunflower","Post Malone & Swae Lee","Post Malone|Swae Lee",["211/89dd38a19e5df92441a1585f67870ca7/17506666060631337235","1Music115/7b1b1b0b7ce2b223f9e08e36abe51877/19UMGIM78325.rgb.jpg","2018"]],
+  ["Circles","Post Malone","",["221/f9b1aaed3e24227f153d99969f8b8464/6272498007975402144","1Music115/7b1b1b0b7ce2b223f9e08e36abe51877/19UMGIM78325.rgb.jpg","2019"]],
+  ["Old Town Road","Lil Nas X","",["221/477dfdf39261cb11d14fb7eb454d2c5d/4800633009593423692","1Music124/713fd3d17ffcba4673bfaa577309ca52/886447622827.jpg","2018"]],
+  ["Shivers","Ed Sheeran","",["211/a89fa5e98a3b77bbe081866067d3f213/13889707114574366771","1Music125/c5d8c67563e3663233db2401eabe574d/190296491412.jpg","2021"]],
+  ["Heat Waves","Glass Animals","",["221/a34cb91140fc5f0ce86214bd171a77aa/384792072030970151","1Music115/da8b77316f4feacf5e748b23389eefa1/20UMGIM03371.rgb.jpg","2020"]],
+  ["Espresso","Sabrina Carpenter","",["211/48145fa9a5b632a045e805af48e52b9c/6315924685303002328","1Music221/3a09fabd7a71d0d73e6a7f3c4c89014e/24UMGIM32304.rgb.jpg","2024"]],
 
   // Deutschsprachig
-  ["99 Luftballons","Nena"],["Irgendwie, irgendwo, irgendwann","Nena"],["Männer","Herbert Grönemeyer"],
-  ["Mensch","Herbert Grönemeyer"],["Der Weg","Herbert Grönemeyer"],["Haus am See","Peter Fox"],["Alles neu","Peter Fox"],
-  ["Zukunft Pink","Peter Fox feat. Inéz","Peter Fox|Inéz"],["Tage wie diese","Die Toten Hosen"],
-  ["Hier kommt Alex","Die Toten Hosen"],["Schrei nach Liebe","Die Ärzte"],["Westerland","Die Ärzte"],
-  ["Du hast","Rammstein"],["Sonne","Rammstein"],["Ein Kompliment","Sportfreunde Stiller"],
-  ["Atemlos durch die Nacht","Helene Fischer"],["Chöre","Mark Forster"],["Au revoir","Mark Forster feat. Sido","Mark Forster|Sido"],
-  ["Wie schön du bist","Sarah Connor"],["Vincent","Sarah Connor"],["Durch die Nacht","Silbermond"],["Symphonie","Silbermond"],
-  ["Perfekte Welle","Juli"],["Geile Zeit","Juli"],["Nur noch kurz die Welt retten","Tim Bendzko"],
-  ["Keine Maschine","Tim Bendzko"],["80 Millionen","Max Giesinger"],["Wenn sie tanzt","Max Giesinger"],
-  ["Auf uns","Andreas Bourani"],["Easy","Cro"],["Traum","Cro"],["Roller","Apache 207"],
-  ["Komet","Udo Lindenberg & Apache 207","Udo Lindenberg|Apache 207"],["Sonderzug nach Pankow","Udo Lindenberg"],
-  ["Cello","Udo Lindenberg feat. Clueso","Udo Lindenberg|Clueso"],["Über sieben Brücken musst du gehn","Peter Maffay"],
-  ["Sexy","Marius Müller-Westernhagen","Westernhagen"],["Freiheit","Marius Müller-Westernhagen","Westernhagen"],
-  ["Rock Me Amadeus","Falco"],["Der Kommissar","Falco"],["Junimond","Rio Reiser"],["König von Deutschland","Rio Reiser"],
-  ["Pocahontas","AnnenMayKantereit"],["Songs für Liam","Kraftklub"],["Nur ein Wort","Wir sind Helden"],
-  ["Denkmal","Wir sind Helden"],["Wie soll ein Mensch das ertragen","Philipp Poisel"],["Herz über Kopf","Joris"],
-  ["Die Da!?!","Die Fantastischen Vier","Fanta 4|Fantastischen Vier"],["MfG","Die Fantastischen Vier","Fanta 4|Fantastischen Vier"],
-  ["Jein","Fettes Brot"],["Emanuela","Fettes Brot"],["Dickes B","Seeed"],["Ding","Seeed"],["Satellite","Lena"],
-  ["Gewinner","Clueso"],["Feuerwerk","Wincent Weiss"],["Musik sein","Wincent Weiss"],["Lieblingsmensch","Namika"],
-  ["Ohne dich (schlaf' ich heut' nacht nicht ein)","Münchener Freiheit"],["Skandal im Sperrbezirk","Spider Murphy Gang"],
-  ["Major Tom (Völlig losgelöst)","Peter Schilling"],["Da Da Da","Trio"],["Verdammt, ich lieb' dich","Matthias Reim"],
-  ["Ein Stern (der deinen Namen trägt)","DJ Ötzi & Nik P.","DJ Ötzi|Nik P."],["Ich war noch niemals in New York","Udo Jürgens"],
-  ["Griechischer Wein","Udo Jürgens"],["Hurra die Welt geht unter","K.I.Z feat. Henning May","K.I.Z|KIZ|Henning May"],
-  ["Alles nur geklaut","Die Prinzen"],["Küssen verboten","Die Prinzen"],["Geboren um zu leben","Unheilig"]
+  ["99 Luftballons","Nena","",["221/0c24c947641077a3057c0987d613ad36/66170433704112999","1Music128/d8a20b884fc15f7a36f348bf6cf3519c/0859381160700.jpg","1983"]],
+  ["Irgendwie, irgendwo, irgendwann","Nena","",["221/bb07c199f63f6f966c683255f5c7ee02/3176101235485271969","1Music126/820ed14a4a008ccaadb34a190c65cb29/0859381175117.jpg","1984"]],
+  ["Männer","Herbert Grönemeyer","",["211/a59772746982bb6479db43578f974163/3541195977681608889","1Music7/e940dde39eb3a4381b079c1ea094d5eb/05099995601151.jpg","2008"]],
+  ["Mensch","Herbert Grönemeyer","",["211/c1346f67fe754694704fe9a145510ed0/8180232883405324634","1Music128/8fe1a84b0ff9cf360f7cf1512e1d7878/05060238632836.rgb.jpg","2002"]],
+  ["Der Weg","Herbert Grönemeyer","",["211/c74369297868e959a7f05d74b237f0ac/13779497304716773610","1Music7/e940dde39eb3a4381b079c1ea094d5eb/05099995601151.jpg","2002"]],
+  ["Haus am See","Peter Fox","",["211/dd73c864bd135c3cc684bc45e7e1b658/11804343455496657686","https://is1-ssl.mzstatic.com/image/thumb/Features/c8/e1/89/dj.jnipgnrl.jpg/300x300bb.jpg","2008"]],
+  ["Alles neu","Peter Fox","",["211/253e0bd2403f2d77772bd57293284597/9531020977280373361","1Music114/4f82e7eeff79398d41edee554a7042ec/mzi.lwjwjhhq.jpg","2008"]],
+  ["Zukunft Pink","Peter Fox feat. Inéz","Peter Fox|Inéz"],
+  ["Tage wie diese","Die Toten Hosen","",["211/ca869587b0c5c3f5520021c0c682660b/6658429541659026420","1Features124/254e7685d53ba5985c0eabdd3d1eb6ed/dj.pvmwgmbl.jpg","2012"]],
+  ["Hier kommt Alex","Die Toten Hosen","",["211/3b8502a82f32d2a9e7b2c4d08d93b6cc/16371045974612392262","1Music112/361f573718c75a4840a12ad7af9d7c75/652450891969.jpg","1988"]],
+  ["Schrei nach Liebe","Die Ärzte","",["211/e53f4dbbc45a46698c8d36cd641e550a/5250262973873347333","1Music211/962b13d6a0ab830c7cd914bef40f071c/886448671282.jpg","1993"]],
+  ["Westerland","Die Ärzte","",["211/ccc42dcf2efbfb25ad345262806e3e4e/6245613827514500898","1Music114/0e3900e0375bcc3727c25faa7028586f/886448669586.jpg","1988"]],
+  ["Du hast","Rammstein","",["211/5a7508eef16737aa3b1a7c63db8cb450/11938743806268466326","1Music116/78af45f6e4e65681c1f6a20e3949ab8c/18UMGIM31237.rgb.jpg","1997"]],
+  ["Sonne","Rammstein","",["221/5a7479f454f762e8650051fd2bc41a1f/5614602769858578012","1Music125/406e367d1f0c850a36d0bc15c219ac97/00602527864426.rgb.jpg","2011"]],
+  ["Ein Kompliment","Sportfreunde Stiller","",["221/7a9926a367519ebe3ce224aa9c87f56b/14443469520290723393","1Music112/92c19ed30bbede267f83e8d953441530/22UMGIM43785.rgb.jpg","2002"]],
+  ["Atemlos durch die Nacht","Helene Fischer","",["211/4c37c1fe23bfa648a559918421f87901/906360942937152070","1Music112/b562d519360b834d2a88571035735c3a/13UAEIM18097.rgb.jpg","2013"]],
+  ["Chöre","Mark Forster","",["221/71f8595fcf3044e88bf3021e4fbde75e/15526366958179967486","1Music69/c58b552047525cb53686f43f094cd3e2/886445832143.jpg","2016"]],
+  ["Au revoir","Mark Forster feat. Sido","Mark Forster|Sido",["221/783f5a09e406d843ffa33b0f30cd3150/12336214171557554920","1Music4/f2fe96c3856ebb47e1190a91498bbf2f/886444572385.jpg","2014"]],
+  ["Wie schön du bist","Sarah Connor","",["221/404a53b13c5c6be7685dea0afd29f184/6462238156467322502","1Music112/b58bdb3cdd25a427e7555a306dcd3728/16UMGIM67352.rgb.jpg","2015"]],
+  ["Vincent","Sarah Connor","",["221/f87cabb4ed2556ac550c1292b6ce1210/15638865580020591785","1Music112/447474556052d1983d482b305da49d83/19UMGIM28794.rgb.jpg","2020"]],
+  ["Durch die Nacht","Silbermond","",["211/b14d150be5fdcf778f1a829f0a7003e0/17150977334843687454","1Music114/d280a558da8f66a2d88c4860a6d79f1e/886445518443.jpg","2004"]],
+  ["Symphonie","Silbermond","",["211/d959ad8233bebd57dd0ff28813c7fefc/8011789993432230967","1Music114/d280a558da8f66a2d88c4860a6d79f1e/886445518443.jpg","2004"]],
+  ["Perfekte Welle","Juli","",["221/22106eb5b1844a39dadc86955685361c/14611313335791529378","1Music118/e74500be68dca9214982acb6e6e4974f/00602498675458.rgb.jpg","2004"]],
+  ["Geile Zeit","Juli","",["221/135d587c207d15786adbb6830ed0b1b8/324307169502288637","1Music124/f232339d78370929ff6dcf616018c3d0/00602547863416.rgb.jpg","2004"]],
+  ["Nur noch kurz die Welt retten","Tim Bendzko","",["221/9cebd39104ba47f515dcdbddc17db196/2464837171895883732","https://is1-ssl.mzstatic.com/image/thumb/Music/da/23/70/mzi.epzrqhzk.jpg/300x300bb.jpg","2011"]],
+  ["Keine Maschine","Tim Bendzko","",["221/f50ec2d1ceb0c44f9de210e92174ef47/22932607213915171","1Music62/d6931221a61e71a4bef25527bb63e1e5/dj.kbicaaqp.jpg","2016"]],
+  ["80 Millionen","Max Giesinger","",["221/8ca3dbab22e9040cb1d06fb0d5c8b4a7/10388389663581688460","1Music128/ea8eb031239023fed45fd1148c4dd16b/4050538318449.jpg","2012"]],
+  ["Wenn sie tanzt","Max Giesinger","",["116/661dc92ef4732874221bccd71b0a8de5/5638113420182681751","1Music116/3e63f46c100ed75e6010005d2f8cefc9/4050538194838.jpg","2016"]],
+  ["Auf uns","Andreas Bourani","",["211/ad3c61a1f2404a25a33e57bc71e5add9/16275168154031441733","1Music124/71a6d5ad61c19cd49085521fa41dfddd/00602537837731.rgb.jpg","2014"]],
+  ["Easy","Cro","",["211/72e59b85ee9e9b0e746dbc35aee1b0b5/7893096664339783467","1Music211/43e251e136efc9e9abc8225c46f647b8/4018939282684.jpg","2015"]],
+  ["Traum","Cro","",["211/b021e14269268dbe26193ff999a5c770/4428899675628945601","1Music221/4f83a99669d8774c71cedec8721ca63f/4018939265793.jpg","2014"]],
+  ["Roller","Apache 207",""],
+  ["Komet","Udo Lindenberg & Apache 207","Udo Lindenberg|Apache 207",["221/c84b3b17a6d1bb27f307567b5437a81c/1931028906472802154","1Music123/50491796e488a0ae03ffcab5afb4aef1/5054197494963.jpg","2023"]],
+  ["Sonderzug nach Pankow","Udo Lindenberg","",["211/d25c511a2de705c144cf5b9bc8c9adf8/2689457293068055603","1Music128/ef79c28981a522b805a54c7dd6fdf612/00602527592367.rgb.jpg","1983"]],
+  ["Cello","Udo Lindenberg feat. Clueso","Udo Lindenberg|Clueso",["211/1db112c7543a3d2ad1f84c0ec9162fea/15866843105293767509","https://is1-ssl.mzstatic.com/image/thumb/Music/y2005/m08/d24/h06/mzi.xqzvavsx.jpg/300x300bb.jpg","1973"]],
+  ["Über sieben Brücken musst du gehn","Peter Maffay","",["221/09e7feca650a9c02eed29b79fdcd03db/8213304471610574357","1Music122/41d1b8d880ac8b3b9b31fd6ed79a4438/contsched.pwryxpdk.jpg","1980"]],
+  ["Sexy","Marius Müller-Westernhagen","Westernhagen",["115/6c64bb8e81d7181b3e88bb34c79ea202/11622111745666801632","https://is1-ssl.mzstatic.com/image/thumb/Music/90/f8/ab/mzi.oycitvbh.jpg/300x300bb.jpg","1989"]],
+  ["Freiheit","Marius Müller-Westernhagen","Westernhagen",["115/5fe7c5e9583950b2e66570388409cfea/2147096305538913314","1Features6/26c48238a4af692ac68f00cab5c13c1e/dj.xkdmezoe.jpg","1987"]],
+  ["Rock Me Amadeus","Falco","",["122/17a526da8141726698fc7f8b21cad289/12457553091099431726","1Music114/941d0a9f6cf2669f851f9fb959aa710b/886972235424.jpg","2008"]],
+  ["Der Kommissar","Falco","",["122/65d1f495beefe4b417d328bca761560f/4630646480375616791","1Music114/941d0a9f6cf2669f851f9fb959aa710b/886972235424.jpg","2008"]],
+  ["Junimond","Rio Reiser","",["221/ddc2b5861123207069c4a6c557c0596a/9993914285394191261","https://is1-ssl.mzstatic.com/image/thumb/Music/d3/6a/a4/mzi.oqxwdsdi.jpg/300x300bb.jpg","1986"]],
+  ["König von Deutschland","Rio Reiser","",["221/e95506ff679b24a16076ae77468ab4f0/16909728550894888370","1Music124/b6c8b034b3ee4569a310d1abe854b009/mzi.hilrailq.jpg","1986"]],
+  ["Pocahontas","AnnenMayKantereit","",["211/438f06d4f23924393e51d2fa94d458d7/4482983864971559112","1Music126/d3bb215ba86ecf8a93e2abc3b2d2eb76/15UMGIM74958.rgb.jpg","2016"]],
+  ["Songs für Liam","Kraftklub","",["221/83ddf6a174355798c023fe892fd3a8b2/247024989322092110","1Music122/4ce9ed7d0b105a37ef632fee6fb0a60e/11UMGIM17662.rgb.jpg","2012"]],
+  ["Nur ein Wort","Wir sind Helden","",["211/be16185a872964fb97a05e5eb03c7ca5/8894170273939000752","1Music211/256789d353d2dace6fe96d2f9e421a9a/13UABIM51051.rgb.jpg","2005"]],
+  ["Denkmal","Wir sind Helden","",["221/69e492ad1ca1f103140e8b3afaf9f028/15095749718268062153","1Music116/53aa57d851e9afedfb4483cb2f9dd648/14ULAIM00619.rgb.jpg","2002"]],
+  ["Wie soll ein Mensch das ertragen","Philipp Poisel","",["221/c7036244dd579e00d5546f929cc1a495/15557778499790392309","1Music211/4f877f6ed1923486d7fc2c931aeb4f84/cover.jpg","2010"]],
+  ["Herz über Kopf","Joris","",["211/7ac8063f45f874308724c7556c63d2ab/1516417004141195954","1Music124/c30d7d249e0d5a81b66f2225da6cad00/mzm.jjewfsuy.jpg","2015"]],
+  ["Die Da!?!","Die Fantastischen Vier","Fanta 4|Fantastischen Vier",["211/0410fc90e133d1d81f1dad776fa609fa/10456883752655777718","1Music3/9cd91c7c76c58ad56e621207b5abe52d/886444953948.jpg","1992"]],
+  ["MfG","Die Fantastischen Vier","Fanta 4|Fantastischen Vier",["211/b7c256bdc38e24325e975d412ca36b7a/1354000171391241042","1Music221/47e259d7b6191d13ab9cd0f72fa7b783/4056813465174_3000.jpg","2023"]],
+  ["Jein","Fettes Brot","",["211/8aa37a8436e88dcd0b5ce2532d8b2cf2/3867408908518139439","1Music221/80fab4545fcc4a00f816eec5c4e5daa0/4018939307264_3000.jpg","1996"]],
+  ["Emanuela","Fettes Brot","",["221/fded81b72b0d595354e8e9ac1d07da3b/10316621252748619871","1Music221/858b2b320b9910ba7c158db3f95fd52a/4018939533991_3000.jpg","2023"]],
+  ["Dickes B","Seeed","",["115/675bea9a6fb1519e76e51b444c791411/11830727304478735736","1Features6/a085ace07c379b1ad0e7ae1e7b65f484/dj.drwdveio.jpg","2000"]],
+  ["Ding","Seeed","",["211/9658fcf2f05f1ca035bf137452acfa41/11359514976492203404","1Music211/b3ee8466725b0c24523073eaea9fd3d2/0643443589161.jpg","2005"]],
+  ["Satellite","Lena","",["221/d8e2504da68e82d81c50a62d8f5858fe/5894561248431482812","1Music211/5359e804fda91dd0039039773db33a82/10UMGIM27419.rgb.jpg","2010"]],
+  ["Gewinner","Clueso","",["221/a44a2407da5b56920641e7fddadac2cf/789463491075742525","1Music113/63ebe9790ce139534866d0864ba69c86/886448351290.jpg","2008"]],
+  ["Feuerwerk","Wincent Weiss","",["221/86f03391f865d128f86a12a362d3dad1/244936062862158780","1Music124/d2255524a806913a58a7d4712b18adc9/00602567062561.rgb.jpg","2017"]],
+  ["Musik sein","Wincent Weiss","",["221/b817ca977209c385508d5f266c3a6f06/18126675356343319646","1Music124/d2255524a806913a58a7d4712b18adc9/00602567062561.rgb.jpg","2016"]],
+  ["Lieblingsmensch","Namika","",["221/728006f3bcf7e69b5f1fc792a73afd48/6198681150153143795","1Music69/92af4a9dc105fe732543363bdb3409ee/886445662290.jpg","2015"]],
+  ["Ohne dich (schlaf' ich heut' nacht nicht ein)","Münchener Freiheit","",["211/8f14d7bf2f7cebdb7b88d3a7a8db98d0/13097502796743649801","1Music124/8a2b7417f45d6a957d2c9588b6ed1409/mzi.sulopkyt.jpg","2001"]],
+  ["Skandal im Sperrbezirk","Spider Murphy Gang","",["115/5ea324550211b04f1b5681c66173efd6/14648414605802226883","1Music71/6b874125aa173b1f90f68fbac593bd63/5099931968256.jpg","1981"]],
+  ["Major Tom (Völlig losgelöst)","Peter Schilling","",["221/39c4142fe08cb99af2e3df3865010ee7/4555062156833330992","1Music125/abc9bd9672784bfaf712897d751d3b30/cover.jpg","1982"]],
+  ["Da Da Da","Trio","",["211/693d59a7831f308f8326eba736b5d02a/11476905596866511874","1Music115/0c4b1b23ccef71cd5bea08420792bbf2/00731455274424.rgb.jpg","1981"]],
+  ["Verdammt, ich lieb' dich","Matthias Reim","",["221/301f7d60491621cddbe26dd11f9daece/12171051327600935346","1Music126/ad845a4b1f9d4ebace4985424be73871/4050538795165.jpg","1990"]],
+  ["Ein Stern (der deinen Namen trägt)","DJ Ötzi & Nik P.","DJ Ötzi|Nik P.",["221/47f2a633f3596517cbfa0f8e4e9ead29/5657572997868469886","1Music128/6fa700abce3955835a4277615e3a8082/00602517489844.rgb.jpg","2007"]],
+  ["Ich war noch niemals in New York","Udo Jürgens","",["211/e2c45bd5c0bf231532b3bc49c4d21b56/10457787525492184810","1Music114/3bcc1c4cf77f4e57fee599cba46d9bcf/mzi.eenmrrlb.jpg","1979"]],
+  ["Griechischer Wein","Udo Jürgens","",["125/10081be207f83f740e057a19c4b3d171/8821623502626063844","1Music124/ceccc8afc58b1095d21cb4231c356fbb/mzi.dbsfyfgz.jpg","1994"]],
+  ["Hurra die Welt geht unter","K.I.Z feat. Henning May","K.I.Z|KIZ|Henning May",["221/b3ba834896b517d70550d5c62926759d/11516635323208930753","1Music128/79617b2e2ab7d74106a2660e783729bf/00602547293893.rgb.jpg","2015"]],
+  ["Alles nur geklaut","Die Prinzen","",["211/39e438fa379ead3f934c8b932d916865/13339537525969843122","1Music126/3c8f644dd5c81aeb3483a460a656ae57/0888880764560.jpg","1993"]],
+  ["Küssen verboten","Die Prinzen","",["221/efbed70aa3bdb816305414e53f9dc8d0/17977693714055213957","1Music116/1727bbabbf1e7e2b154afc5cea922eea/0859381167228.jpg","1992"]],
+  ["Geboren um zu leben","Unheilig","",["211/9386c83dcf96ef3ad7321ee49e9e05fe/16672414022658295234","1Music211/07a95e1f3991c335aaf970c8bad4ccc8/09UMGIM45494.rgb.jpg","2010"]]
 ];
 
 const PER_DAY_SLOTS = 10;           // so viele Listenplätze „verbraucht“ jeder Tag
@@ -420,13 +602,21 @@ function candidatesForDay(d) {
   return out;
 }
 
-/* ---------- Vergleich der Antworten (tolerant bei Tippfehlern) ---------- */
+/* ---------- Vergleich der Antworten (tolerant) ----------
+   Egal sind: Groß-/Kleinschreibung, Akzente, ä/ae, Satzzeichen, Leerzeichen,
+   Artikel am Anfang (the/die/der …), kleine Tippfehler. */
 function norm(s) {
-  return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .replace(/ß/g, "ss").replace(/ø/g, "o").replace(/&/g, " and ").replace(/\bund\b/g, " and ")
-    .replace(/['’`´]/g, "").replace(/[^a-z0-9]+/g, " ").trim()
-    .replace(/^the /, "").replace(/\s+/g, " ");
+  return String(s || "").normalize("NFKD").toLowerCase()
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/ß/g, "ss").replace(/ø/g, "o").replace(/æ/g, "ae")
+    .replace(/&|\+/g, " and ")
+    .replace(/['‘’`´]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\b(und|n)\b/g, "and")
+    .replace(/ae/g, "a").replace(/oe/g, "o").replace(/ue/g, "u")
+    .replace(/\s+/g, " ").trim();
 }
+function core(s) { const n = norm(s), c = n.replace(/^(the|die|der|das|a|an|le|la|les|el|los) /, ""); return c.length >= 3 ? c : n; }
 function mainTitle(s) { return String(s).replace(/\(.*?\)|\[.*?\]/g, " ").replace(/\s[-–]\s.*$/, ""); }
 function lev(a, b) {
   const m = a.length, n = b.length; if (!m) return n; if (!n) return m;
@@ -438,29 +628,34 @@ function lev(a, b) {
   }
   return prev[n];
 }
-function close(a, b) { if (!a || !b) return false; if (a === b) return true; return 1 - lev(a, b) / Math.max(a.length, b.length) >= 0.8; }
+function close(a, b) {
+  if (!a || !b) return false;
+  a = a.replace(/ /g, ""); b = b.replace(/ /g, "");
+  if (a === b) return true;
+  const d = lev(a, b), L = Math.max(a.length, b.length);
+  if (L <= 5) return false;            // kurze Wörter müssen exakt stimmen (sonst Hello = Cello)
+  return d <= 1 || 1 - d / L >= 0.75;
+}
 function titleOk(ans, title) {
-  const a = norm(ans); if (!a) return false;
-  const main = norm(mainTitle(title)), full = norm(title);
-  if (close(a, main) || close(a, full)) return true;
-  return main.length >= 12 && main.startsWith(a) && a.length >= main.length * 0.6;
+  const a = core(ans); if (!a) return false;
+  const targets = [core(mainTitle(title)), core(title)];
+  return targets.some(t => close(a, t)
+    || (t.length >= 10 && t.startsWith(a) && a.length >= t.length * 0.6)
+    || (t.length >= 4 && a.length <= t.length * 1.5 && (" " + a + " ").includes(" " + t + " ")));
 }
 function artistNames(song) {
   const names = [song[1]].concat(song[2] ? song[2].split("|") : []);
   const out = new Set();
   names.forEach(n => {
-    const v = norm(n); if (!v) return; out.add(v);
+    const v = core(n); if (!v) return; out.add(v);
     const w = v.split(" ");
-    if (w.length === 2 && w[1].length >= 5) out.add(w[1]); // Nachname reicht, z. B. „Grönemeyer“
+    if (w.length >= 2 && w[w.length - 1].length >= 5) out.add(w[w.length - 1]); // Nachname reicht, z. B. „Grönemeyer“
   });
   return [...out];
 }
 function artistOk(ans, song) {
-  const names = artistNames(song);
-  const whole = norm(ans); if (!whole) return false;
-  if (names.some(n => close(whole, n))) return true;
-  const parts = String(ans).split(/\s*(?:,|&|\/|\bfeat\.?|\bft\.?|\bund\b|\band\b|\bx\b|\bwith\b)\s*/i).map(norm).filter(Boolean);
-  return parts.length > 1 && parts.some(p => names.some(n => close(p, n)));
+  const a = core(ans); if (!a) return false;
+  return artistNames(song).some(n => close(a, n) || (n.length >= 4 && (" " + a + " ").includes(" " + n + " ")));
 }
 
 /* ---------- Musikkatalog (iTunes Search API, JSONP) ---------- */
@@ -476,8 +671,26 @@ function jsonp(url) {
     document.head.appendChild(s);
   });
 }
+function dashUuid(u) { return u.slice(0, 8) + "-" + u.slice(8, 12) + "-" + u.slice(12, 16) + "-" + u.slice(16, 20) + "-" + u.slice(20); }
+function audioUrl(s) {
+  if (s.startsWith("http")) return s;
+  const [n, u, id] = s.split("/");
+  return "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview" + n + "/v4/" + u.slice(0, 2) + "/" + u.slice(2, 4) + "/" + u.slice(4, 6) + "/" + dashUuid(u) + "/mzaf_" + id + ".plus.aac.p.m4a";
+}
+function coverUrl(s) {
+  if (!s || s.startsWith("http")) return s || "";
+  const [srv, u, file] = s.split("/");
+  return "https://is" + srv[0] + "-ssl.mzstatic.com/image/thumb/" + srv.slice(1) + "/v4/" + u.slice(0, 2) + "/" + u.slice(2, 4) + "/" + u.slice(4, 6) + "/" + dashUuid(u) + "/" + file + "/300x300bb.jpg";
+}
 async function resolveSong(idx) {
   const song = SONGS[idx];
+  // 1. Fest hinterlegte Daten (funktionieren auf jedem Gerät, auch am iPhone)
+  if (song[3]) {
+    const m = song[3];
+    return { idx, title: song[0], artist: song[1], preview: audioUrl(m[0]), cover: coverUrl(m[1]), year: m[2],
+      link: "https://music.apple.com/de/search?term=" + encodeURIComponent(mainTitle(song[0]) + " " + song[1]) };
+  }
+  // 2. Neu ergänzte Songs: live im Apple-Katalog suchen
   const term = encodeURIComponent(mainTitle(song[0]) + " " + song[1].replace(/\bfeat\.?/i, ""));
   const url = "https://itunes.apple.com/search?term=" + term + "&media=music&entity=song&limit=15&country=DE";
   let data;
@@ -504,14 +717,24 @@ async function resolveSong(idx) {
     link: pick.trackViewUrl || ""
   };
 }
-async function buildRound(cands, n) {
-  const out = []; let ptr = 0;
-  while (out.length < n && ptr < cands.length) {
-    const batch = cands.slice(ptr, ptr + (n - out.length)); ptr += batch.length;
-    const res = await Promise.all(batch.map(i => resolveSong(i).catch(() => null)));
-    res.forEach(r => r && out.push(r));
+// Sammelt n spielbare Songs. Hinterlegte Songs sind sofort da; nur neu ergänzte
+// Songs werden einzeln (nacheinander) im Katalog gesucht, damit Apple nichts blockiert.
+async function buildRound(cands, n, exclude = new Set()) {
+  const out = [], seen = new Set(exclude);
+  for (const i of cands) {
+    if (out.length >= n) break;
+    if (seen.has(i)) continue;
+    seen.add(i);
+    const r = await resolveSong(i).catch(() => null);
+    if (r) out.push(r);
   }
   return out;
+}
+// Tageskandidaten, danach der Rest der Liste als Reserve
+function dailyPool() {
+  const first = candidatesForDay(dayIndex());
+  const rest = permFor(9999).filter(i => !first.includes(i));
+  return first.concat(rest);
 }
 
 /* ---------- Oberfläche ---------- */
@@ -555,7 +778,14 @@ function renderHome() {
   const acts = $("homeActions"); acts.innerHTML = "";
   const btn = (txt, cls, fn) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn " + cls; b.textContent = txt; b.onclick = fn; acts.appendChild(b); return b; };
 
-  if (st && st.finished) {
+  const target = st ? (st.count || settings.count) : 0;
+  if (st && st.songs.length < target) {
+    // Runde wurde durch einen Ladefehler zu kurz – auffüllen
+    const missing = target - st.songs.length;
+    $("homeTitle").textContent = "Dein Mix ist noch nicht komplett";
+    $("homeSub").textContent = `Beim Laden fehlten ${missing} von ${target} Songs. Spiel sie jetzt nach, deine bisherigen Punkte bleiben.`;
+    btn(`Restliche ${missing} Songs spielen`, "btn-primary", () => topUp(st, target));
+  } else if (st && st.finished) {
     $("homeTitle").textContent = "Heute geschafft";
     $("homeSub").textContent = `${totalPoints(st)} von ${st.songs.length * 2} Punkten. Morgen wartet ein neuer Mix.`;
     btn("Ergebnis ansehen", "btn-primary", () => showEnd(st));
@@ -574,10 +804,22 @@ function renderHome() {
 async function startDaily() {
   show("loading"); $("loadingText").textContent = "Songs werden geladen …";
   primeAudio();
-  const songs = await buildRound(candidatesForDay(dayIndex()), settings.count);
-  if (!songs.length) return loadError();
-  game = { mode: "daily", date: todayKey(), time: settings.time, songs, answers: [], finished: false };
+  const songs = await buildRound(dailyPool(), settings.count);
+  if (songs.length < settings.count) return loadError();   // nie eine verkürzte Runde starten
+  game = { mode: "daily", date: todayKey(), time: settings.time, count: settings.count, songs, answers: [], finished: false };
   store.set("day:" + todayKey(), game);
+  nextSong();
+}
+async function topUp(st, target) {
+  show("loading"); $("loadingText").textContent = "Fehlende Songs werden geladen …";
+  primeAudio();
+  const have = new Set(st.songs.map(s => s.idx));
+  const extra = await buildRound(dailyPool(), target - st.songs.length, have);
+  if (st.songs.length + extra.length < target) return loadError();
+  st.songs = st.songs.concat(extra);
+  st.count = target; st.finished = false;
+  game = st; game.mode = "daily";
+  store.set("day:" + st.date, game);
   nextSong();
 }
 async function startTraining() {
@@ -586,8 +828,8 @@ async function startTraining() {
   const today = new Set(candidatesForDay(dayIndex()).slice(0, PER_DAY_SLOTS));
   const pool = SONGS.map((_, i) => i).filter(i => !today.has(i));
   for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  const songs = await buildRound(pool.slice(0, 30), settings.count);
-  if (!songs.length) return loadError();
+  const songs = await buildRound(pool, settings.count);
+  if (songs.length < settings.count) return loadError();
   game = { mode: "training", date: todayKey(), time: settings.time, songs, answers: [], finished: false };
   nextSong();
 }
@@ -675,6 +917,8 @@ function submit(skipped) {
   const t = skipped ? "" : $("ansTitle").value.trim(), a = skipped ? "" : $("ansArtist").value.trim();
   const secs = startedAt ? Math.min(game.time, (performance.now() - startedAt) / 1000) : game.time;
   const ans = { title: t, artist: a, okT: titleOk(t, song.title), okA: artistOk(a, song), secs: Math.round(secs * 10) / 10 };
+  // Felder vertauscht? (Interpret ins Titelfeld getippt und umgekehrt)
+  if (!ans.okT && !ans.okA && titleOk(a, song.title) && artistOk(t, song)) { ans.okT = true; ans.okA = true; }
   game.answers.push(ans);
   if (game.mode === "daily") store.set("day:" + game.date, game);
   showReveal(song, ans);
